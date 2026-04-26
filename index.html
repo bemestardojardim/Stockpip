@@ -1,0 +1,812 @@
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Vault-Tec: Packs</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Courier New', 'VT323', monospace;
+            background: #0a0f0a;
+            background-image: radial-gradient(#1a2a1a 1px, #0a0f0a 1px);
+            background-size: 40px 40px;
+            padding-bottom: 20px;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(0deg, rgba(0, 255, 0, 0.03) 0px, rgba(0, 255, 0, 0.03) 2px, transparent 2px, transparent 4px);
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 12px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            background: #1a2a1a;
+            border: 2px solid #2d8c2d;
+            border-radius: 6px;
+            padding: 8px 12px;
+            margin-bottom: 12px;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .pipboy-icon img {
+            width: 36px;
+            height: 36px;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            filter: drop-shadow(0 0 3px #2d8c2d);
+        }
+
+        .title h1 {
+            color: #2d8c2d;
+            font-size: 18px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            font-weight: normal;
+            text-shadow: 0 0 3px #2d8c2d;
+        }
+
+        .theme-btn {
+            background: #0a1f0a;
+            border: 1px solid #2d8c2d;
+            color: #2d8c2d;
+            font-size: 16px;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        .stats-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .stats-card {
+            flex: 1;
+            background: #0f1a0f;
+            border: 1px solid #2d5a2d;
+            border-radius: 4px;
+            padding: 6px 8px;
+            text-align: center;
+        }
+
+        .stats-label {
+            font-size: 8px;
+            color: #5a9e5a;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stats-value {
+            font-size: 20px;
+            color: #2d8c2d;
+            font-weight: bold;
+            line-height: 1.2;
+        }
+
+        .btn-primary {
+            width: 100%;
+            background: #1a2a1a;
+            color: #2d8c2d;
+            border: 1px solid #2d8c2d;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 12px;
+            font-family: monospace;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #2d8c2d;
+            color: #0a0f0a;
+        }
+
+        .section-title {
+            font-size: 10px;
+            color: #2d8c2d;
+            margin-bottom: 6px;
+            margin-top: 4px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-left: 2px solid #2d8c2d;
+            padding-left: 8px;
+        }
+
+        .items-list {
+            max-height: 500px;
+            overflow-y: auto;
+            border: 1px solid #1a3a1a;
+            border-radius: 4px;
+            background: #0a100a;
+        }
+
+        .item-card {
+            background: #0f1a0f;
+            border-bottom: 1px solid #1a3a1a;
+            padding: 8px 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: grab;
+        }
+
+        .item-card.dragging { opacity: 0.5; background: #1a3a1a; }
+        .item-card.drag-over { border-top: 2px solid #4ade4a; background: #1a2a1a; }
+
+        .item-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+        }
+
+        .drag-handle {
+            cursor: grab;
+            font-size: 14px;
+            color: #2d5a2d;
+        }
+
+        .item-indicator {
+            width: 6px;
+            height: 6px;
+            border-radius: 1px;
+        }
+        .item-indicator.success { background: #4ade4a; box-shadow: 0 0 3px #4ade4a; }
+        .item-indicator.warning { background: #eab308; box-shadow: 0 0 3px #eab308; }
+        .item-indicator.error { background: #ef4444; box-shadow: 0 0 3px #ef4444; }
+
+        .item-name {
+            font-size: 12px;
+            color: #8bc48b;
+            flex: 1;
+            font-family: monospace;
+        }
+
+        .item-badge {
+            background: #0a1a0a;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: bold;
+            color: #2d8c2d;
+            border: 1px solid #1a4a1a;
+        }
+
+        .btn-secondary {
+            width: 100%;
+            background: transparent;
+            color: #5a9e5a;
+            border: 1px solid #2d5a2d;
+            padding: 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            cursor: pointer;
+            margin-top: 12px;
+            font-family: monospace;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .btn-secondary:hover {
+            background: #1a2a1a;
+            color: #2d8c2d;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.active { display: flex; }
+
+        .modal-content {
+            background: #0f1a0f;
+            border: 2px solid #2d8c2d;
+            border-radius: 4px;
+            padding: 20px;
+            width: 90%;
+            max-width: 280px;
+        }
+
+        .modal-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #2d8c2d;
+            margin-bottom: 6px;
+        }
+
+        .modal-ideal {
+            font-size: 10px;
+            color: #5a9e5a;
+            margin-bottom: 15px;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 8px;
+            font-size: 14px;
+            background: #0a100a;
+            border: 1px solid #2d8c2d;
+            color: #2d8c2d;
+            text-align: center;
+            margin-bottom: 15px;
+            font-family: monospace;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #2d5a2d;
+            background: #0a1a0a;
+            color: #5a9e5a;
+            cursor: pointer;
+            font-family: monospace;
+            font-size: 11px;
+        }
+
+        .btn-save { border-color: #2d8c2d !important; color: #2d8c2d !important; }
+
+        .manage-mode {
+            text-align: center;
+            padding: 6px;
+            font-size: 8px;
+            color: #5a9e5a;
+            background: #0a1a0a;
+            border: 1px solid #1a3a1a;
+            margin-top: 10px;
+        }
+
+        .edit-btn, .delete-btn {
+            background: transparent;
+            border: none;
+            font-size: 12px;
+            cursor: pointer;
+            padding: 3px 5px;
+            font-family: monospace;
+        }
+        .edit-btn { color: #2d8c2d; }
+        .delete-btn { color: #ef4444; }
+
+        .add-section {
+            margin-top: 12px;
+            display: none;
+        }
+        .add-section.active { display: block; }
+
+        .add-input {
+            width: 100%;
+            padding: 6px;
+            margin-bottom: 6px;
+            background: #0a100a;
+            border: 1px solid #2d5a2d;
+            color: #2d8c2d;
+            font-family: monospace;
+            font-size: 11px;
+        }
+
+        .add-row {
+            display: flex;
+            gap: 6px;
+        }
+        .add-row input { flex: 1; }
+
+        .btn-add {
+            background: #1a2a1a;
+            border: 1px solid #2d8c2d;
+            color: #2d8c2d;
+            padding: 6px 10px;
+            cursor: pointer;
+            font-family: monospace;
+            font-size: 11px;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 8px;
+            color: #2d5a2d;
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px solid #1a3a1a;
+        }
+
+        /* ===== ESTILOS DO TUTORIAL - SEM FUNDO ESCURO ===== */
+        .tutorial-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            z-index: 2000;
+            pointer-events: none;
+        }
+
+        .tutorial-card {
+            position: fixed;
+            background: #0f1a0f;
+            border: 3px solid #2d8c2d;
+            border-radius: 8px;
+            padding: 16px;
+            max-width: 280px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(45, 140, 45, 0.5);
+            animation: slideIn 0.3s ease;
+            pointer-events: auto;
+            z-index: 2002;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .tutorial-card .pip-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 10px;
+            image-rendering: pixelated;
+        }
+
+        .tutorial-card .pip-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .tutorial-card h3 {
+            color: #2d8c2d;
+            font-size: 14px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .tutorial-card p {
+            color: #8bc48b;
+            font-size: 11px;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .tutorial-card .btn-next {
+            background: #1a2a1a;
+            border: 1px solid #2d8c2d;
+            color: #2d8c2d;
+            padding: 6px 12px;
+            margin: 3px;
+            cursor: pointer;
+            font-family: monospace;
+            font-size: 11px;
+            border-radius: 4px;
+            pointer-events: auto;
+        }
+
+        .tutorial-card .btn-next:hover {
+            background: #2d8c2d;
+            color: #0a0f0a;
+        }
+
+        .tutorial-highlight {
+            position: relative;
+            z-index: 2001;
+            animation: glowPulse 1s ease-in-out infinite;
+            pointer-events: auto;
+        }
+
+        @keyframes glowPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(45, 140, 45, 0.7); border-color: #2d8c2d; }
+            50% { box-shadow: 0 0 0 3px rgba(45, 140, 45, 0.7); border-color: #4ade4a; }
+        }
+
+        .tutorial-arrow {
+            position: fixed;
+            font-size: 28px;
+            color: #2d8c2d;
+            animation: bounce 0.8s infinite;
+            z-index: 2002;
+            pointer-events: none;
+            text-shadow: 0 0 5px #0a0f0a;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <div class="logo-container">
+            <div class="pipboy-icon">
+                <img src="pipboy.png" alt="Pip-Boy" onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+                <span style="display:none; font-size:32px;">📟👤</span>
+            </div>
+            <div class="title">
+                <h1>PACKS</h1>
+            </div>
+            <button class="theme-btn" id="themeBtn">☢️</button>
+            <button class="theme-btn" id="manageBtn">✏️</button>
+        </div>
+    </div>
+
+    <div id="statsContainer"></div>
+
+    <button class="btn-primary" id="editBtn">✎ EDITAR FALTAS</button>
+
+    <div class="section-title" id="sectionTitle">📋 PRODUTOS EM FALTA</div>
+    <div class="items-list" id="itemsList"></div>
+
+    <div id="manageSection" class="add-section">
+        <input type="text" id="newItemName" class="add-input" placeholder="NOME DO PRODUTO">
+        <div class="add-row">
+            <input type="number" id="newItemIdeal" class="add-input" placeholder="IDEAL">
+            <button class="btn-add" id="addItemBtn">➕ ADICIONAR</button>
+        </div>
+    </div>
+
+    <button class="btn-secondary" id="resetBtn">⟳ RESETAR SETOR ⟳</button>
+    <div id="manageModeText" class="manage-mode"></div>
+    <footer>⚡ PIP-BOY OS v.13.37 | PACKS SECTOR ⚡</footer>
+</div>
+
+<div class="modal" id="editModal">
+    <div class="modal-content">
+        <div class="modal-title" id="modalTitle">📟 PRODUTO</div>
+        <div class="modal-ideal" id="modalIdeal">ideal: 0</div>
+        <input type="number" id="modalInput" class="modal-input" placeholder="FALTAS" autocomplete="off">
+        <div class="modal-buttons">
+            <button class="btn-cancel" id="modalCancel">CANCELAR</button>
+            <button class="btn-save" id="modalSave">SALVAR</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let setores = [
+        { id: 0, nome: "🍺 PACKS", itens: [
+            { id: 0, nome: "Kaiser", ideal: 8, falta: 0 },
+            { id: 1, nome: "Heineken", ideal: 11, falta: 0 },
+            { id: 2, nome: "Amstel", ideal: 4, falta: 0 },
+            { id: 3, nome: "Império", ideal: 4, falta: 0 },
+            { id: 4, nome: "Brahma Chopp", ideal: 11, falta: 0 },
+            { id: 5, nome: "Brahma Duplo Malte", ideal: 1, falta: 0 },
+            { id: 6, nome: "Budweiser", ideal: 1, falta: 0 },
+            { id: 7, nome: "Boa Azul", ideal: 3, falta: 0 },
+            { id: 8, nome: "Original", ideal: 8, falta: 0 },
+            { id: 9, nome: "Boêmia", ideal: 3, falta: 0 },
+            { id: 10, nome: "Skol", ideal: 3, falta: 0 },
+            { id: 11, nome: "Brussels", ideal: 1, falta: 0 },
+            { id: 12, nome: "BG", ideal: 3, falta: 0 },
+            { id: 13, nome: "Stella Gold", ideal: 2, falta: 0 },
+            { id: 14, nome: "Stella Normal", ideal: 1, falta: 0 },
+            { id: 15, nome: "Spaten", ideal: 1, falta: 0 },
+            { id: 16, nome: "Petra", ideal: 3, falta: 0 },
+            { id: 17, nome: "Itaipava", ideal: 3, falta: 0 }
+        ]}
+    ];
+
+    let currentSetor = 0, modoGerenciar = false, editingQueue = [], currentEditIndex = 0, currentEditItem = null, dragSourceIndex = null;
+
+    // ==================== TUTORIAL ====================
+    let tutorialActive = false;
+    let tutorialStep = 0;
+    
+    const tutorialSteps = [
+        {
+            target: "editBtn",
+            title: "📝 EDITAR FALTAS",
+            message: "Clique aqui para editar a quantidade em falta de cada produto. O sistema vai abrir um por um para você preencher o número que falta.",
+            arrow: "bottom"
+        },
+        {
+            target: "manageBtn",
+            title: "🔧 MODO GERENCIAR",
+            message: "Ative este modo para: arrastar itens (pela alça ☰☰), editar nomes ou excluir produtos.",
+            arrow: "bottom"
+        },
+        {
+            target: "resetBtn",
+            title: "⟳ RESETAR SETOR",
+            message: "Cuidado! Este botão zera TODAS as faltas do setor. Útil quando você termina a contagem e quer começar de novo.",
+            arrow: "top"
+        },
+        {
+            target: "themeBtn",
+            title: "☢️ TEMA FALLOUT",
+            message: "Alterna entre as cores do terminal: verde, laranja ou azul. Escolha seu estilo de Vault!",
+            arrow: "bottom"
+        }
+    ];
+
+    function showTutorialStep(step) {
+        if (step >= tutorialSteps.length) {
+            const overlay = document.getElementById('tutorial-overlay');
+            if (overlay) overlay.remove();
+            localStorage.setItem('tutorial_complete', 'true');
+            tutorialActive = false;
+            return;
+        }
+        
+        const stepData = tutorialSteps[step];
+        const targetElement = document.getElementById(stepData.target);
+        
+        if (!targetElement) {
+            showTutorialStep(step + 1);
+            return;
+        }
+        
+        // Remove overlay anterior se existir
+        const oldOverlay = document.getElementById('tutorial-overlay');
+        if (oldOverlay) oldOverlay.remove();
+        
+        // Remove highlight anterior
+        document.querySelectorAll('.tutorial-highlight').forEach(el => {
+            el.classList.remove('tutorial-highlight');
+        });
+        
+        // Cria novo overlay (fundo transparente)
+        const overlay = document.createElement('div');
+        overlay.id = 'tutorial-overlay';
+        overlay.className = 'tutorial-overlay';
+        
+        // Posiciona o card baseado no botão alvo
+        const rect = targetElement.getBoundingClientRect();
+        let cardTop, cardLeft, arrowTop, arrowChar;
+        
+        if (stepData.arrow === 'top') {
+            // Card acima do botão, seta apontando pra baixo
+            cardTop = rect.top - 150;
+            cardLeft = rect.left + rect.width/2 - 140;
+            arrowTop = rect.top - 20;
+            arrowChar = '▼';
+        } else {
+            // Card abaixo do botão, seta apontando pra cima
+            cardTop = rect.bottom + 30;
+            cardLeft = rect.left + rect.width/2 - 140;
+            arrowTop = rect.bottom + 5;
+            arrowChar = '▲';
+        }
+        
+        // Garante que o card não sai da tela
+        if (cardTop < 10) cardTop = 10;
+        if (cardLeft < 10) cardLeft = 10;
+        if (cardLeft + 280 > window.innerWidth) cardLeft = window.innerWidth - 290;
+        
+        // Seta
+        const arrow = document.createElement('div');
+        arrow.className = 'tutorial-arrow';
+        arrow.innerHTML = arrowChar;
+        arrow.style.left = (rect.left + rect.width/2 - 14) + 'px';
+        arrow.style.top = arrowTop + 'px';
+        
+        // Card do tutorial com a imagem pipboy.png
+        const card = document.createElement('div');
+        card.className = 'tutorial-card';
+        card.style.top = cardTop + 'px';
+        card.style.left = cardLeft + 'px';
+        card.innerHTML = `
+            <div class="pip-icon">
+                <img src="pipboy.png" onerror="this.style.display='none'; this.parentElement.innerHTML='📟👤'; this.parentElement.style.fontSize='48px';">
+            </div>
+            <h3>${stepData.title}</h3>
+            <p>${stepData.message}</p>
+            <button class="btn-next" id="tutorial-next">PRÓXIMO ⚡</button>
+            <button class="btn-next" id="tutorial-skip">PULAR</button>
+        `;
+        
+        overlay.appendChild(arrow);
+        overlay.appendChild(card);
+        document.body.appendChild(overlay);
+        
+        // Destaca o elemento
+        targetElement.classList.add('tutorial-highlight');
+        
+        // Eventos (usando setTimeout para garantir que os elementos existem)
+        setTimeout(() => {
+            const nextBtn = document.getElementById('tutorial-next');
+            const skipBtn = document.getElementById('tutorial-skip');
+            if (nextBtn) {
+                nextBtn.onclick = () => {
+                    targetElement.classList.remove('tutorial-highlight');
+                    showTutorialStep(step + 1);
+                };
+            }
+            if (skipBtn) {
+                skipBtn.onclick = () => {
+                    targetElement.classList.remove('tutorial-highlight');
+                    overlay.remove();
+                    localStorage.setItem('tutorial_complete', 'true');
+                    tutorialActive = false;
+                };
+            }
+        }, 50);
+    }
+
+    function startTutorial() {
+        const tutorialComplete = localStorage.getItem('tutorial_complete');
+        if (!tutorialComplete) {
+            tutorialActive = true;
+            setTimeout(() => showTutorialStep(0), 800);
+        }
+    }
+
+    // ==================== FUNÇÕES PRINCIPAIS ====================
+    function saveToLocalStorage() { localStorage.setItem('estoque_packs', JSON.stringify(setores)); }
+    function loadFromLocalStorage() { const saved = localStorage.getItem('estoque_packs'); if (saved) setores = JSON.parse(saved); }
+    function getEmFalta() { return setores[currentSetor].itens.filter(i => i.falta > 0); }
+    function getCorStatus(falta, ideal) { if (falta === 0) return 'success'; if (falta <= ideal * 0.3) return 'warning'; return 'error'; }
+
+    function handleDragStart(e, index) { if (!modoGerenciar) return; dragSourceIndex = index; e.target.closest('.item-card')?.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; }
+    function handleDragEnd(e) { e.target.closest('.item-card')?.classList.remove('dragging'); dragSourceIndex = null; document.querySelectorAll('.item-card').forEach(c => c.classList.remove('drag-over')); }
+    function handleDragOver(e) { if (!modoGerenciar) return; e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }
+    function handleDragEnter(e, index) { if (!modoGerenciar || dragSourceIndex === null) return; e.preventDefault(); const card = e.target.closest('.item-card'); if (card && dragSourceIndex !== index) { document.querySelectorAll('.item-card').forEach(c => c.classList.remove('drag-over')); card.classList.add('drag-over'); } }
+    function handleDrop(e, targetIndex) { e.preventDefault(); if (!modoGerenciar || dragSourceIndex === null || dragSourceIndex === targetIndex) return; const itens = setores[currentSetor].itens; const [movedItem] = itens.splice(dragSourceIndex, 1); itens.splice(targetIndex, 0, movedItem); itens.forEach((item, idx) => item.id = idx); saveToLocalStorage(); renderAll(); document.querySelectorAll('.item-card').forEach(c => c.classList.remove('drag-over')); dragSourceIndex = null; }
+
+    function renderStats() {
+        const emFalta = getEmFalta();
+        const totalFalta = emFalta.reduce((s, i) => s + i.falta, 0);
+        document.getElementById('statsContainer').innerHTML = `
+            <div class="stats-row">
+                <div class="stats-card">
+                    <div class="stats-label">FALTAM</div>
+                    <div class="stats-value">${totalFalta}</div>
+                    <div class="stats-label">UNIDADES</div>
+                </div>
+                <div class="stats-card">
+                    <div class="stats-label">ITENS</div>
+                    <div class="stats-value">${emFalta.length}</div>
+                    <div class="stats-label">PRODUTOS</div>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderItems() {
+        const itemsContainer = document.getElementById('itemsList');
+        const emFalta = getEmFalta();
+        
+        if (emFalta.length === 0 && !modoGerenciar) {
+            itemsContainer.innerHTML = `<div style="text-align:center; padding:30px; color:#2d5a2d; font-size:11px;">✨ NENHUM ITEM EM FALTA ✨</div>`;
+            return;
+        }
+        
+        const itensToShow = modoGerenciar ? setores[currentSetor].itens : emFalta;
+        
+        itemsContainer.innerHTML = itensToShow.map((item, idx) => {
+            const cor = getCorStatus(item.falta, item.ideal);
+            return `
+                <div class="item-card" draggable="${modoGerenciar}" data-id="${item.id}" data-index="${idx}" ondragstart="handleDragStart(event, ${idx})" ondragend="handleDragEnd(event)" ondragover="handleDragOver(event)" ondragenter="handleDragEnter(event, ${idx})" ondrop="handleDrop(event, ${idx})">
+                    <div class="item-info">
+                        <div class="item-indicator ${cor}"></div>
+                        ${modoGerenciar ? '<span class="drag-handle">☰☰</span>' : ''}
+                        <div class="item-name">${item.nome}</div>
+                        <div class="item-badge">${item.falta}/${item.ideal}</div>
+                        ${modoGerenciar ? `<button class="edit-btn" data-edit="${item.id}">✏️</button><button class="delete-btn" data-delete="${item.id}">🗑️</button>` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        if (modoGerenciar) {
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const id = parseInt(btn.dataset.edit);
+                    const item = setores[currentSetor].itens.find(i => i.id === id);
+                    if (item) {
+                        const novoNome = prompt('EDITAR NOME:', item.nome);
+                        if (novoNome && novoNome.trim()) {
+                            const novoIdeal = prompt('EDITAR IDEAL:', item.ideal);
+                            if (novoIdeal && !isNaN(parseInt(novoIdeal))) {
+                                item.nome = novoNome.trim();
+                                item.ideal = parseInt(novoIdeal);
+                                saveToLocalStorage();
+                                renderAll();
+                            }
+                        }
+                    }
+                });
+            });
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const id = parseInt(btn.dataset.delete);
+                    if (confirm('REMOVER ESTE ITEM?')) {
+                        setores[currentSetor].itens = setores[currentSetor].itens.filter(i => i.id !== id);
+                        setores[currentSetor].itens.forEach((item, idx) => item.id = idx);
+                        saveToLocalStorage();
+                        renderAll();
+                    }
+                });
+            });
+        }
+    }
+
+    function renderManageMode() {
+        const manageText = document.getElementById('manageModeText');
+        const manageSection = document.getElementById('manageSection');
+        const sectionTitle = document.getElementById('sectionTitle');
+        if (modoGerenciar) {
+            manageText.innerHTML = '☢️ MODO GERENCIAR ATIVO (ARRASTE PELA ALÇA ☰☰ PARA REORDENAR) ☢️';
+            manageSection.classList.add('active');
+            sectionTitle.innerHTML = '📦 TODOS OS ITENS';
+        } else {
+            manageText.innerHTML = '';
+            manageSection.classList.remove('active');
+            sectionTitle.innerHTML = '📋 PRODUTOS EM FALTA';
+        }
+    }
+
+    function renderAll() { renderStats(); renderItems(); renderManageMode(); }
+
+    function iniciarEdicao() { editingQueue = [...setores[currentSetor].itens]; currentEditIndex = 0; mostrarProximoDialog(); }
+    function mostrarProximoDialog() { if (currentEditIndex >= editingQueue.length) { document.getElementById('editModal').classList.remove('active'); saveToLocalStorage(); renderAll(); alert('✅ EDIÇÃO CONCLUÍDA!'); return; } currentEditItem = editingQueue[currentEditIndex]; document.getElementById('modalTitle').textContent = `📟 ${currentEditItem.nome}`; document.getElementById('modalIdeal').textContent = `IDEAL: ${currentEditItem.ideal}`; document.getElementById('modalInput').value = currentEditItem.falta; document.getElementById('modalInput').focus(); document.getElementById('editModal').classList.add('active'); }
+    function salvarEAvancar() { const input = document.getElementById('modalInput'); const valor = parseInt(input.value); if (isNaN(valor)) { alert('⚠️ DIGITE UM NÚMERO VÁLIDO'); return; } if (valor < 0 || valor > currentEditItem.ideal) { alert(`⚠️ VALOR ENTRE 0 E ${currentEditItem.ideal}`); return; } currentEditItem.falta = valor; currentEditIndex++; mostrarProximoDialog(); }
+
+    function adicionarItem() { const nome = document.getElementById('newItemName').value.trim(); const ideal = parseInt(document.getElementById('newItemIdeal').value); if (!nome) { alert('⚠️ NOME DO PRODUTO OBRIGATÓRIO'); return; } if (isNaN(ideal) || ideal <= 0) { alert('⚠️ IDEAL DEVE SER MAIOR QUE 0'); return; } const novoId = setores[currentSetor].itens.length; setores[currentSetor].itens.push({ id: novoId, nome: nome, ideal: ideal, falta: 0 }); document.getElementById('newItemName').value = ''; document.getElementById('newItemIdeal').value = ''; saveToLocalStorage(); renderAll(); }
+    function resetarSetor() { if (confirm(`⚠️ RESETAR TODAS AS FALTAS DO SETOR "${setores[currentSetor].nome}"?`)) { setores[currentSetor].itens.forEach(item => item.falta = 0); saveToLocalStorage(); renderAll(); alert('✅ SETOR RESETADO!'); } }
+
+    let falloutIntensity = 0;
+    function toggleTheme() { falloutIntensity = (falloutIntensity + 1) % 3; if (falloutIntensity === 0) { document.body.style.background = "#0a0f0a"; document.body.style.backgroundImage = "radial-gradient(#1a2a1a 1px, #0a0f0a 1px)"; } else if (falloutIntensity === 1) { document.body.style.background = "#1a0f0a"; document.body.style.backgroundImage = "radial-gradient(#2a1a1a 1px, #1a0f0a 1px)"; } else { document.body.style.background = "#0a0a1a"; document.body.style.backgroundImage = "radial-gradient(#1a1a2a 1px, #0a0a1a 1px)"; } }
+    function toggleModoGerenciar() { modoGerenciar = !modoGerenciar; document.getElementById('manageBtn').textContent = modoGerenciar ? '💾' : '✏️'; renderAll(); }
+
+    window.handleDragStart = handleDragStart; window.handleDragEnd = handleDragEnd; window.handleDragOver = handleDragOver; window.handleDragEnter = handleDragEnter; window.handleDrop = handleDrop;
+
+    document.getElementById('editBtn').addEventListener('click', iniciarEdicao);
+    document.getElementById('resetBtn').addEventListener('click', resetarSetor);
+    document.getElementById('themeBtn').addEventListener('click', toggleTheme);
+    document.getElementById('addItemBtn').addEventListener('click', adicionarItem);
+    document.getElementById('modalCancel').addEventListener('click', () => { document.getElementById('editModal').classList.remove('active'); });
+    document.getElementById('modalSave').addEventListener('click', salvarEAvancar);
+    document.getElementById('modalInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') salvarEAvancar(); });
+    document.getElementById('manageBtn').addEventListener('click', toggleModoGerenciar);
+
+    loadFromLocalStorage();
+    renderAll();
+    startTutorial();
+</script>
+</body>
+</html>
